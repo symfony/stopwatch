@@ -11,14 +11,17 @@
 
 namespace Symfony\Component\Stopwatch\Tests;
 
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\Stopwatch\Stopwatch;
 
 /**
- * StopwatchTest
+ * StopwatchTest.
  *
  * @author Fabien Potencier <fabien@symfony.com>
+ *
+ * @group time-sensitive
  */
-class StopwatchTest extends \PHPUnit_Framework_TestCase
+class StopwatchTest extends TestCase
 {
     const DELTA = 20;
 
@@ -27,8 +30,45 @@ class StopwatchTest extends \PHPUnit_Framework_TestCase
         $stopwatch = new Stopwatch();
         $event = $stopwatch->start('foo', 'cat');
 
-        $this->assertInstanceof('Symfony\Component\Stopwatch\StopwatchEvent', $event);
+        $this->assertInstanceOf('Symfony\Component\Stopwatch\StopwatchEvent', $event);
         $this->assertEquals('cat', $event->getCategory());
+        $this->assertSame($event, $stopwatch->getEvent('foo'));
+    }
+
+    public function testIsStarted()
+    {
+        $stopwatch = new Stopwatch();
+        $stopwatch->start('foo', 'cat');
+
+        $this->assertTrue($stopwatch->isStarted('foo'));
+    }
+
+    public function testIsNotStarted()
+    {
+        $stopwatch = new Stopwatch();
+
+        $this->assertFalse($stopwatch->isStarted('foo'));
+    }
+
+    public function testIsNotStartedEvent()
+    {
+        $stopwatch = new Stopwatch();
+
+        $sections = new \ReflectionProperty('Symfony\Component\Stopwatch\Stopwatch', 'sections');
+        $sections->setAccessible(true);
+        $section = $sections->getValue($stopwatch);
+
+        $events = new \ReflectionProperty('Symfony\Component\Stopwatch\Section', 'events');
+        $events->setAccessible(true);
+
+        $stopwatchMockEvent = $this->getMockBuilder('Symfony\Component\Stopwatch\StopwatchEvent')
+            ->setConstructorArgs(array(microtime(true) * 1000))
+            ->getMock()
+        ;
+
+        $events->setValue(end($section), array('foo' => $stopwatchMockEvent));
+
+        $this->assertFalse($stopwatch->isStarted('foo'));
     }
 
     public function testStop()
@@ -38,21 +78,17 @@ class StopwatchTest extends \PHPUnit_Framework_TestCase
         usleep(200000);
         $event = $stopwatch->stop('foo');
 
-        $this->assertInstanceof('Symfony\Component\Stopwatch\StopwatchEvent', $event);
+        $this->assertInstanceOf('Symfony\Component\Stopwatch\StopwatchEvent', $event);
         $this->assertEquals(200, $event->getDuration(), null, self::DELTA);
     }
 
-    public function testLap()
+    /**
+     * @expectedException \LogicException
+     */
+    public function testUnknownEvent()
     {
         $stopwatch = new Stopwatch();
-        $stopwatch->start('foo', 'cat');
-        usleep(100000);
-        $event = $stopwatch->lap('foo');
-        usleep(100000);
-        $stopwatch->stop('foo');
-
-        $this->assertInstanceof('Symfony\Component\Stopwatch\StopwatchEvent', $event);
-        $this->assertEquals(200, $event->getDuration(), null, self::DELTA);
+        $stopwatch->getEvent('foo');
     }
 
     /**
@@ -62,6 +98,18 @@ class StopwatchTest extends \PHPUnit_Framework_TestCase
     {
         $stopwatch = new Stopwatch();
         $stopwatch->stop('foo');
+    }
+
+    public function testMorePrecision()
+    {
+        $stopwatch = new Stopwatch(true);
+
+        $stopwatch->start('foo');
+        $event = $stopwatch->stop('foo');
+
+        $this->assertInternalType('float', $event->getStartTime());
+        $this->assertInternalType('float', $event->getEndTime());
+        $this->assertInternalType('float', $event->getDuration());
     }
 
     public function testSection()
@@ -116,5 +164,17 @@ class StopwatchTest extends \PHPUnit_Framework_TestCase
     {
         $stopwatch = new Stopwatch();
         $stopwatch->openSection('section');
+    }
+
+    public function testReset()
+    {
+        $stopwatch = new Stopwatch();
+
+        $stopwatch->openSection();
+        $stopwatch->start('foo', 'cat');
+
+        $stopwatch->reset();
+
+        $this->assertEquals(new Stopwatch(), $stopwatch);
     }
 }
