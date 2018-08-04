@@ -98,7 +98,7 @@ class StopwatchEvent
      */
     public function stop()
     {
-        if (!\count($this->started)) {
+        if (0 === \count($this->started)) {
             throw new \LogicException('stop() called but start() has not been called before.');
         }
 
