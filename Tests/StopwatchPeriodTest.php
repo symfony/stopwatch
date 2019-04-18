@@ -43,6 +43,15 @@ class StopwatchPeriodTest extends TestCase
         $this->assertSame($duration, $period->getDuration());
     }
 
+    /**
+     * @dataProvider provideFormattedDurationValues
+     */
+    public function testGetFormattedDuration($start, $end, $useMorePrecision, $duration)
+    {
+        $period = new StopwatchPeriod($start, $end, $useMorePrecision);
+        $this->assertSame($duration, $period->getFormattedDuration());
+    }
+
     public function provideTimeValues()
     {
         yield [0, false, 0];
@@ -63,5 +72,14 @@ class StopwatchPeriodTest extends TestCase
         yield [2, 3.14, true, 1.14];
         yield [2.71, 3.14, false, 1];
         yield [2.71, 3.14, true, 0.43];
+    }
+
+    public function provideFormattedDurationValues()
+    {
+        yield [1035, 123852, false, '34h 6m 57s'];
+        yield [100, 3852, false, '1h 2m 32s'];
+        yield [102, 878, false, '12m 56s'];
+        yield [17, 75, false, '58s'];
+        yield [5, 7, false, '2s'];
     }
 }
