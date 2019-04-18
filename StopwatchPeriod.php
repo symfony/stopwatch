@@ -65,6 +65,31 @@ class StopwatchPeriod
     }
 
     /**
+     * Gets the formatted time spent in this period.
+     *
+     * @return string The formatted period duration
+     */
+    public function getFormattedDuration()
+    {
+        $duration = $this->end - $this->start;
+
+        $hours = floor($duration / 3600);
+        $minutes = floor(($duration / 60) % 60);
+        $seconds = $duration % 60;
+
+        $hours = !empty($hours) ? $hours . 'h' : '';
+        $minutes = !empty($minutes) ? $minutes . 'm' : '';
+        $seconds = !empty($seconds) ? $seconds . 's' : '';
+
+        $durationParts = [$hours, $minutes, $seconds];
+        $durationParts = array_filter($durationParts, function ($durationPart) {
+            return !empty($durationPart);
+        });
+
+        return implode(' ', $durationParts);
+    }
+
+    /**
      * Gets the memory usage.
      *
      * @return int The memory usage (in bytes)
