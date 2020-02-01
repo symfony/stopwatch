@@ -62,7 +62,7 @@ class StopwatchEvent
      *
      * @return string The category
      */
-    public function getCategory()
+    public function getCategory(): string
     {
         return $this->category;
     }
@@ -72,7 +72,7 @@ class StopwatchEvent
      *
      * @return float The origin in milliseconds
      */
-    public function getOrigin()
+    public function getOrigin(): float
     {
         return $this->origin;
     }
@@ -82,7 +82,7 @@ class StopwatchEvent
      *
      * @return $this
      */
-    public function start()
+    public function start(): self
     {
         $this->started[] = $this->getNow();
 
@@ -96,7 +96,7 @@ class StopwatchEvent
      *
      * @throws \LogicException When stop() is called without a matching call to start()
      */
-    public function stop()
+    public function stop(): self
     {
         if (!\count($this->started)) {
             throw new \LogicException('stop() called but start() has not been called before.');
@@ -112,7 +112,7 @@ class StopwatchEvent
      *
      * @return bool
      */
-    public function isStarted()
+    public function isStarted(): bool
     {
         return !empty($this->started);
     }
@@ -122,7 +122,7 @@ class StopwatchEvent
      *
      * @return $this
      */
-    public function lap()
+    public function lap(): self
     {
         return $this->stop()->start();
     }
@@ -130,7 +130,7 @@ class StopwatchEvent
     /**
      * Stops all non already stopped periods.
      */
-    public function ensureStopped()
+    public function ensureStopped(): void
     {
         while (\count($this->started)) {
             $this->stop();
@@ -142,7 +142,7 @@ class StopwatchEvent
      *
      * @return StopwatchPeriod[] An array of StopwatchPeriod instances
      */
-    public function getPeriods()
+    public function getPeriods(): array
     {
         return $this->periods;
     }
@@ -204,7 +204,7 @@ class StopwatchEvent
      *
      * @return int The memory usage (in bytes)
      */
-    public function getMemory()
+    public function getMemory(): int
     {
         $memory = 0;
         foreach ($this->periods as $period) {
@@ -221,7 +221,7 @@ class StopwatchEvent
      *
      * @return float Time in ms
      */
-    protected function getNow()
+    protected function getNow(): float
     {
         return $this->formatTime(microtime(true) * 1000 - $this->origin);
     }
@@ -239,7 +239,7 @@ class StopwatchEvent
     /**
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
         return sprintf('%s: %.2F MiB - %d ms', $this->getCategory(), $this->getMemory() / 1024 / 1024, $this->getDuration());
     }
