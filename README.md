@@ -7,13 +7,17 @@ Getting Started
 ---------------
 
 ```
-$ composer require symfony/stopwatch
+composer require symfony/stopwatch
 ```
 
 ```php
 use Symfony\Component\Stopwatch\Stopwatch;
 
 $stopwatch = new Stopwatch();
+
+// in order to see the stopwatch results in the profiler toolbar, inject it instead of instatiating a new instance
+// e.g. public function __construct(private Stopwatch $stopwatch)
+
 
 // optionally group events into sections (e.g. phases of the execution)
 $stopwatch->openSection();
